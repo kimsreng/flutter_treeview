@@ -1,5 +1,6 @@
 import 'dart:convert' show jsonDecode, jsonEncode;
 
+import '../tree_view.dart';
 import 'models/node.dart';
 
 /// Defines the insertion mode adding a new [Node] to the [TreeView].
@@ -75,7 +76,7 @@ class TreeViewController {
   /// ```
   TreeViewController loadMap({List<Map<String, dynamic>> list: const []}) {
     List<Node> treeData =
-    list.map((Map<String, dynamic> item) => Node.fromMap(item)).toList();
+        list.map((Map<String, dynamic> item) => Node.fromMap(item)).toList();
     return TreeViewController(
       children: treeData,
       selectedKey: this.selectedKey,
@@ -94,14 +95,15 @@ class TreeViewController {
   ///   controller = controller.withAddNode(key, newNode);
   /// });
   /// ```
-  TreeViewController withAddNode(String key,
-      Node newNode, {
-        Node parent,
-        InsertMode mode: InsertMode.append,
-        int index,
-      }) {
+  TreeViewController withAddNode(
+    String key,
+    Node newNode, {
+    Node parent,
+    InsertMode mode: InsertMode.append,
+    int index,
+  }) {
     List<Node> _data =
-    addNode(key, newNode, parent: parent, mode: mode, index: index);
+        addNode(key, newNode, parent: parent, mode: mode, index: index);
     return TreeViewController(
       children: _data,
       selectedKey: this.selectedKey,
@@ -298,16 +300,45 @@ class TreeViewController {
     return _this.children;
   }
 
+  List<Node> collapseAll() {
+    List<Node> nodes = [];
+    children.forEach((element) {
+      nodes.add(_setExpandedStatusTo(element, false));
+    });
+    return nodes;
+  }
+
+  List<Node> expandAll() {
+    List<Node> nodes = [];
+    children.forEach((element) {
+      nodes.add(_setExpandedStatusTo(element, true));
+    });
+    return nodes;
+  }
+
+  Node _setExpandedStatusTo(Node node, bool status) {
+    List<Node> _children = [];
+    if (node.children.length > 0) {
+      node.children.forEach((element) {
+        _children.add(_setExpandedStatusTo(element, status));
+      });
+      return node.copyWith(expanded: status, children: _children);
+    } else {
+      return node.copyWith(expanded: status);
+    }
+  }
+
   /// Adds a new node to an existing node identified by specified key. It optionally
   /// accepts an [InsertMode] and index. If no [InsertMode] is specified,
   /// it appends the new node as a child at the end. This method returns
   /// a new list with the added node.
-  List<Node> addNode(String key,
-      Node newNode, {
-        Node parent,
-        InsertMode mode: InsertMode.append,
-        int index,
-      }) {
+  List<Node> addNode(
+    String key,
+    Node newNode, {
+    Node parent,
+    InsertMode mode: InsertMode.append,
+    int index,
+  }) {
     List<Node> _children = parent == null ? this.children : parent.children;
     return _children.map((Node child) {
       if (child.key == key) {

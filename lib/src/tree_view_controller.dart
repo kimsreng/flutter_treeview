@@ -76,7 +76,7 @@ class TreeViewController {
   /// ```
   TreeViewController loadMap({List<Map<String, dynamic>> list: const []}) {
     List<Node> treeData =
-        list.map((Map<String, dynamic> item) => Node.fromMap(item)).toList();
+    list.map((Map<String, dynamic> item) => Node.fromMap(item)).toList();
     return TreeViewController(
       children: treeData,
       selectedKey: this.selectedKey,
@@ -95,15 +95,14 @@ class TreeViewController {
   ///   controller = controller.withAddNode(key, newNode);
   /// });
   /// ```
-  TreeViewController withAddNode(
-    String key,
-    Node newNode, {
-    Node parent,
-    InsertMode mode: InsertMode.append,
-    int index,
-  }) {
+  TreeViewController withAddNode(String key,
+      Node newNode, {
+        Node parent,
+        InsertMode mode: InsertMode.append,
+        int index,
+      }) {
     List<Node> _data =
-        addNode(key, newNode, parent: parent, mode: mode, index: index);
+    addNode(key, newNode, parent: parent, mode: mode, index: index);
     return TreeViewController(
       children: _data,
       selectedKey: this.selectedKey,
@@ -328,17 +327,67 @@ class TreeViewController {
     }
   }
 
+  List<Node> propograteCheckedNode() {
+    List<Node> nodes = [];
+    children.forEach((element) {
+      nodes.add(_propograteCheckedNode(element));
+    });
+    return nodes;
+  }
+
+  Node _propograteCheckedNode(node) {
+    if (node.children.length > 0) {
+      var allCount = 0;
+      var checkedCount = 0;
+      var hasSome = false;
+      bool status;
+      List<Node> _children = [];
+      node.children.forEach((element) {
+        if (element.data.isChecked == null) {
+          hasSome = true;
+        }
+        if (!hasSome) {
+          if (element.data.isChecked != null && element.data.isChecked) {
+            checkedCount++;
+          }
+          allCount++;
+        }
+        _children.add(_propograteCheckedNode(element));
+      });
+      if (hasSome) {
+        status = null;
+      } else if (allCount == checkedCount) {
+        status = true;
+      } else if (checkedCount != 0) {
+        status = null;
+      } else {
+        status = false;
+      }
+      node.data.isChecked = status;
+      return Node(
+          children: _children,
+          label: node.data.permissionName,
+          key: node.data.id.toString(),
+          data: node.data);
+     // return node.copyWith(children: _children);
+    } else {
+      return Node(
+          label: node.data.permissionName,
+          key: node.data.id.toString(),
+          data: node.data);
+    }
+  }
+
   /// Adds a new node to an existing node identified by specified key. It optionally
   /// accepts an [InsertMode] and index. If no [InsertMode] is specified,
   /// it appends the new node as a child at the end. This method returns
   /// a new list with the added node.
-  List<Node> addNode(
-    String key,
-    Node newNode, {
-    Node parent,
-    InsertMode mode: InsertMode.append,
-    int index,
-  }) {
+  List<Node> addNode(String key,
+      Node newNode, {
+        Node parent,
+        InsertMode mode: InsertMode.append,
+        int index,
+      }) {
     List<Node> _children = parent == null ? this.children : parent.children;
     return _children.map((Node child) {
       if (child.key == key) {

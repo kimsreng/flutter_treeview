@@ -35,7 +35,7 @@ class _TreeNodeState extends State<TreeNode>
   static final Animatable<double> _easeInTween =
   CurveTween(curve: Curves.easeIn);
   static Duration _kExpand = Duration(milliseconds: 200);
-  static double _kIconSize = 28;
+  static double _kIconSize = 26;
   bool isChecked;
 
   AnimationController _controller;
@@ -107,7 +107,27 @@ class _TreeNodeState extends State<TreeNode>
     TreeView _treeView = TreeView.of(context);
     assert(_treeView != null, 'TreeView must exist in context');
     if (_treeView.onCheckChanged != null) {
+      if (status == null) {
+        status = false;
+        //it should be false
+        //as user uncheck and it become the null state
+        //so just make true and upadte all children to to true
+      }
+      _setExpandedStatusTo(widget.node, status);
+//      setState(() {
+//        isChecked = status;
+//      });
+      //propogate change to parent node
       _treeView.onCheckChanged(widget.node, status);
+    }
+  }
+
+  _setExpandedStatusTo(Node node, bool status) {
+    node.data.isChecked = status;
+    if (node.children.length > 0) {
+      node.children.forEach((element) {
+        _setExpandedStatusTo(element, status);
+      });
     }
   }
 
@@ -125,6 +145,7 @@ class _TreeNodeState extends State<TreeNode>
     TreeViewTheme _theme = _treeView.theme;
     return widget.node.isParent
         ? GestureDetector(
+      behavior: HitTestBehavior.translucent,
       onTap: () => _handleExpand(),
       child: _TreeNodeExpander(
         expanded: widget.node.expanded,
@@ -132,7 +153,7 @@ class _TreeNodeState extends State<TreeNode>
       ),
     )
         : Container(
-      width: _kIconSize,
+      width: _kIconSize - 2.0,
     );
   }
 
@@ -165,11 +186,11 @@ class _TreeNodeState extends State<TreeNode>
     var isCheckable = _treeView.onCheckChanged != null;
     if (isCheckable) {
       if (widget.node.isParent) {
-        isChecked ??=
-            widget.node.data?.isChecked;
+        isChecked ??= widget.node.data?.isChecked;
       } else {
-        isChecked ??=
-        widget.node.data != null && widget.node.data.isChecked ? true : false;
+        isChecked ??= widget.node.data != null && widget.node.data.isChecked
+            ? true
+            : false;
       }
     }
     var textLabel = Text(
@@ -213,9 +234,6 @@ class _TreeNodeState extends State<TreeNode>
                 value: isChecked,
                 onChanged: (value) {
                   _handleCheckChanged(value);
-                  setState(() {
-                    isChecked = value;
-                  });
                 },
               ),
               Expanded(
@@ -475,7 +493,7 @@ class _TreeNodeExpanderState extends State<_TreeNodeExpander>
       controller.forward();
     }
     return Container(
-      width: widget.themeData.size + 2,
+      width: widget.themeData.size + 4,
       height: widget.themeData.size + 2,
       alignment: Alignment.center,
       decoration: BoxDecoration(

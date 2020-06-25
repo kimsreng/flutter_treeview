@@ -24,7 +24,10 @@ class TreeNode extends StatefulWidget {
   /// The node object used to display the widget state
   final Node node;
 
-  const TreeNode({Key key, @required this.node}) : super(key: key);
+  final bool showCheckStatus;
+
+  const TreeNode({Key key, @required this.node, this.showCheckStatus = false})
+      : super(key: key);
 
   @override
   _TreeNodeState createState() => _TreeNodeState();
@@ -33,14 +36,14 @@ class TreeNode extends StatefulWidget {
 class _TreeNodeState extends State<TreeNode>
     with SingleTickerProviderStateMixin {
   static final Animatable<double> _easeInTween =
-  CurveTween(curve: Curves.easeIn);
+      CurveTween(curve: Curves.easeIn);
   static Duration _kExpand = Duration(milliseconds: 200);
   static double _kIconSize = 26;
-  bool isChecked;
 
   AnimationController _controller;
   Animation<double> _heightFactor;
   bool _isExpanded = false;
+  bool _isChecked;
 
   @override
   void initState() {
@@ -49,6 +52,10 @@ class _TreeNodeState extends State<TreeNode>
     _heightFactor = _controller.drive(_easeInTween);
     _isExpanded = widget.node.expanded;
     if (_isExpanded) _controller.value = 1.0;
+    if (widget.showCheckStatus) {
+      widget.node.updateChecked = updateCheckedStatus;
+      _isChecked = widget.node.checked;
+    }
   }
 
   @override
@@ -75,6 +82,14 @@ class _TreeNodeState extends State<TreeNode>
       setState(() {});
     }
     super.didUpdateWidget(oldWidget);
+  }
+
+  updateCheckedStatus() {
+    if (this.mounted) {
+      setState(() {
+        this._isChecked = widget.node.checked;
+      });
+    }
   }
 
   void _handleExpand() {
@@ -106,27 +121,28 @@ class _TreeNodeState extends State<TreeNode>
   void _handleCheckChanged(bool status) {
     TreeView _treeView = TreeView.of(context);
     assert(_treeView != null, 'TreeView must exist in context');
-    if (_treeView.onCheckChanged != null) {
+    if (_treeView.controller.showCheckStatus) {
       if (status == null) {
-        status = false;
         //it should be false
         //as user uncheck and it become the null state
         //so just make true and upadte all children to to true
+        status = false;
       }
       _setCheckedStatusToChildren(widget.node, status);
-      setState(() {
-        isChecked = status;
-      });
-      //propogate change to parent node
-      _treeView.onCheckChanged(widget.node, status);
+      Node currentNode = widget.node;
+      Node parentNode = _treeView.controller.getParent(widget.node.key);
+
+      while (parentNode.key != currentNode.key) {
+        currentNode = parentNode;
+        parentNode = _treeView.controller.getParent(parentNode.key);
+      }
+      _treeView.controller.propagateCheckedNode(currentNode);
     }
   }
 
   _setCheckedStatusToChildren(Node node, bool status) {
     node.data.isChecked = status;
     node.checked = status;
-//    print(node.data.permissionName);
-//    print(status);
     if (node.children.length > 0) {
       node.children.forEach((element) {
         _setCheckedStatusToChildren(element, status);
@@ -148,16 +164,16 @@ class _TreeNodeState extends State<TreeNode>
     TreeViewTheme _theme = _treeView.theme;
     return widget.node.isParent
         ? GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: () => _handleExpand(),
-      child: _TreeNodeExpander(
-        expanded: widget.node.expanded,
-        themeData: _theme.expanderTheme,
-      ),
-    )
+            behavior: HitTestBehavior.translucent,
+            onTap: () => _handleExpand(),
+            child: _TreeNodeExpander(
+              expanded: widget.node.expanded,
+              themeData: _theme.expanderTheme,
+            ),
+          )
         : Container(
-      width: _kIconSize - 2.0,
-    );
+            width: _kIconSize - 2.0,
+          );
   }
 
   Widget _buildNodeIcon() {
@@ -168,13 +184,13 @@ class _TreeNodeState extends State<TreeNode>
       width: widget.node.hasIcon ? _kIconSize : 10,
       child: widget.node.hasIcon
           ? Icon(
-        widget.node.icon.icon,
-        size: _theme.iconTheme.size,
-        color:
-        widget.node.icon != null && widget.node.icon.iconColor != null
-            ? widget.node.icon.iconColor
-            : _theme.iconTheme.color,
-      )
+              widget.node.icon.icon,
+              size: _theme.iconTheme.size,
+              color:
+                  widget.node.icon != null && widget.node.icon.iconColor != null
+                      ? widget.node.icon.iconColor
+                      : _theme.iconTheme.color,
+            )
           : null,
     );
   }
@@ -186,33 +202,24 @@ class _TreeNodeState extends State<TreeNode>
     bool isSelected = _treeView.controller.selectedKey != null &&
         _treeView.controller.selectedKey == widget.node.key;
     final icon = _buildNodeIcon();
-    var isCheckable = _treeView.onCheckChanged != null;
-    if (isCheckable) {
-      if (widget.node.isParent) {
-        isChecked ??= widget.node.data?.isChecked;
-      } else {
-        isChecked ??= widget.node.data != null && widget.node.data.isChecked
-            ? true
-            : false;
-      }
-    }
+
     var textLabel = Text(
       widget.node.label,
       style: widget.node.isParent
           ? _theme.parentLabelStyle.copyWith(
-        fontWeight: _theme.parentLabelStyle.fontWeight,
-        color: isSelected
-            ? _theme.colorScheme.onPrimary
-            : _theme.parentLabelStyle.color == TextStyle().color
-            ? _theme.colorScheme.onBackground
-            : _theme.parentLabelStyle.color,
-      )
+              fontWeight: _theme.parentLabelStyle.fontWeight,
+              color: isSelected
+                  ? _theme.colorScheme.onPrimary
+                  : _theme.parentLabelStyle.color == TextStyle().color
+                      ? _theme.colorScheme.onBackground
+                      : _theme.parentLabelStyle.color,
+            )
           : _theme.labelStyle.copyWith(
-        fontWeight: _theme.labelStyle.fontWeight,
-        color: isSelected
-            ? _theme.colorScheme.onPrimary
-            : _theme.colorScheme.onBackground,
-      ),
+              fontWeight: _theme.labelStyle.fontWeight,
+              color: isSelected
+                  ? _theme.colorScheme.onPrimary
+                  : _theme.colorScheme.onBackground,
+            ),
     );
     return Container(
       padding: EdgeInsets.symmetric(
@@ -228,21 +235,23 @@ class _TreeNodeState extends State<TreeNode>
         children: <Widget>[
           icon,
           Expanded(
-            child: isCheckable
+            child: widget.showCheckStatus
                 ? Row(children: [
-              Checkbox(
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
-                tristate: widget.node.isParent,
-                value: isChecked,
-                onChanged: (value) {
-                  _handleCheckChanged(value);
-                },
-              ),
-              Expanded(
-                child: textLabel,
-              )
-            ])
+                    Checkbox(
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: VisualDensity.compact,
+                      tristate: true,
+
+                      ///widget.node.isParent,
+                      value: _isChecked,
+                      onChanged: (value) {
+                        _handleCheckChanged(value);
+                      },
+                    ),
+                    Expanded(
+                      child: textLabel,
+                    )
+                  ])
                 : textLabel,
           ),
         ],
@@ -261,16 +270,16 @@ class _TreeNodeState extends State<TreeNode>
     final labelContainer = _buildNodeLabel();
     Widget _tappable = _treeView.onNodeDoubleTap != null
         ? InkWell(
-      hoverColor: Colors.blue,
-      onTap: _handleTap,
-      onDoubleTap: _handleDoubleTap,
-      child: labelContainer,
-    )
+            hoverColor: Colors.blue,
+            onTap: _handleTap,
+            onDoubleTap: _handleDoubleTap,
+            child: labelContainer,
+          )
         : InkWell(
-      hoverColor: Colors.blue,
-      onTap: _handleTap,
-      child: labelContainer,
-    );
+            hoverColor: Colors.blue,
+            onTap: _handleTap,
+            child: labelContainer,
+          );
     if (widget.node.isParent) {
       if (_treeView.supportParentDoubleTap && canSelectParent) {
         _tappable = InkWell(
@@ -303,17 +312,17 @@ class _TreeNodeState extends State<TreeNode>
         crossAxisAlignment: CrossAxisAlignment.center,
         children: _theme.expanderTheme.position == ExpanderPosition.end
             ? <Widget>[
-          Expanded(
-            child: _tappable,
-          ),
-          arrowContainer,
-        ]
+                Expanded(
+                  child: _tappable,
+                ),
+                arrowContainer,
+              ]
             : <Widget>[
-          arrowContainer,
-          Expanded(
-            child: _tappable,
-          ),
-        ],
+                arrowContainer,
+                Expanded(
+                  child: _tappable,
+                ),
+              ],
       ),
     );
   }
@@ -327,35 +336,37 @@ class _TreeNodeState extends State<TreeNode>
     final nodeLabel = _buildNodeTitle();
     return widget.node.isParent
         ? AnimatedBuilder(
-      animation: _controller.view,
-      builder: (BuildContext context, Widget child) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            nodeLabel,
-            ClipRect(
-              child: Align(
-                heightFactor: _heightFactor.value,
-                child: child,
-              ),
-            ),
-          ],
-        );
-      },
-      child: closed
-          ? null
-          : Container(
-        margin: EdgeInsets.only(left: _kIconSize),
-        child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: widget.node.children.map((Node node) {
-              return TreeNode(node: node);
-            }).toList()),
-      ),
-    )
+            animation: _controller.view,
+            builder: (BuildContext context, Widget child) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  nodeLabel,
+                  ClipRect(
+                    child: Align(
+                      heightFactor: _heightFactor.value,
+                      child: child,
+                    ),
+                  ),
+                ],
+              );
+            },
+            child: closed
+                ? null
+                : Container(
+                    margin: EdgeInsets.only(left: _kIconSize),
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: widget.node.children.map((Node node) {
+                          return TreeNode(
+                              node: node,
+                              showCheckStatus: widget.showCheckStatus);
+                        }).toList()),
+                  ),
+          )
         : Container(
-      child: nodeLabel,
-    );
+            child: nodeLabel,
+          );
   }
 }
 
@@ -504,9 +515,9 @@ class _TreeNodeExpanderState extends State<_TreeNodeExpander>
         border: _borderWidth == 0
             ? null
             : Border.all(
-          width: _borderWidth,
-          color: widget.themeData.color,
-        ),
+                width: _borderWidth,
+                color: widget.themeData.color,
+              ),
         color: _backColor,
       ),
       child: AnimatedBuilder(

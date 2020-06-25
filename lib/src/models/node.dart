@@ -30,7 +30,13 @@ class Node<T> {
   /// node is a parent
   final bool expanded;
 
+  /// checked property for the node
+  /// this is the case when checked is configured
   bool checked;
+
+  ///A function to be created by
+  ///the node widget to reflect change in the check status
+  Function updateChecked;
 
   /// Generic data model that can be assigned to the [TreeNode]. This makes
   /// it useful to assign and retrieve data associated with the [TreeNode]
@@ -47,7 +53,8 @@ class Node<T> {
     this.checked,
     this.icon,
     this.data,
-  })  : assert(key != null),
+  })
+      : assert(key != null),
         assert(label != null);
 
   /// Creates a [Node] from a string value. It generates a unique key.
@@ -106,6 +113,7 @@ class Node<T> {
         label: label ?? this.label,
         icon: icon ?? this.icon,
         expanded: expanded ?? this.expanded,
+        checked: this.checked,
         children: children ?? this.children,
         data: data ?? this.data,
       );

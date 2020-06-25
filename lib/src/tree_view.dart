@@ -32,9 +32,6 @@ class TreeView extends InheritedWidget {
   /// The tap handler for a node. Passes the node key.
   final Function(String) onNodeTap;
 
-  /// The tap handler for a node. Passes the node key.
-  final Function(Node, bool) onCheckChanged;
-
   /// The double tap handler for a node. Passes the node key.
   final Function(String) onNodeDoubleTap;
 
@@ -65,18 +62,16 @@ class TreeView extends InheritedWidget {
     Key key,
     @required this.controller,
     this.onNodeTap,
-    this.onCheckChanged,
     this.onNodeDoubleTap,
     this.onExpansionChanged,
     this.allowParentSelect: false,
     this.supportParentDoubleTap: false,
     TreeViewTheme theme,
-  })
-      : this.theme = theme ?? const TreeViewTheme(),
+  })  : this.theme = theme ?? const TreeViewTheme(),
         super(
-        key: key,
-        child: _TreeViewData(controller),
-      );
+          key: key,
+          child: _TreeViewData(controller),
+        );
 
   static TreeView of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType(aspect: TreeView);
@@ -101,13 +96,11 @@ class _TreeViewData extends StatelessWidget {
   Widget build(BuildContext context) {
     ThemeData _parentTheme = Theme.of(context);
     return Theme(
-      data: _parentTheme.copyWith(
-          hoverColor: Colors.grey.shade100
-      ),
+      data: _parentTheme.copyWith(hoverColor: Colors.grey.shade100),
       child: ListView(
         padding: EdgeInsets.zero,
         children: _controller.children.map((Node node) {
-          return TreeNode(node: node);
+          return TreeNode(node: node, showCheckStatus: _controller.showCheckStatus);
         }).toList(),
       ),
     );

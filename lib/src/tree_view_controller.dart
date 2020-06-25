@@ -38,9 +38,13 @@ class TreeViewController {
   /// The key of the select node in the [TreeView].
   final String selectedKey;
 
+  //show check status
+  final bool showCheckStatus;
+
   TreeViewController({
     this.children: const [],
     this.selectedKey,
+    this.showCheckStatus = false,
   });
 
   /// Creates a copy of this controller but with the given fields
@@ -49,6 +53,7 @@ class TreeViewController {
     return TreeViewController(
       children: children ?? this.children,
       selectedKey: selectedKey ?? this.selectedKey,
+      showCheckStatus: this.showCheckStatus,
     );
   }
 
@@ -327,15 +332,19 @@ class TreeViewController {
     }
   }
 
-  List<Node> propograteCheckedNode() {
-    List<Node> nodes = [];
+  propagateCheckedNodeForAll() {
     children.forEach((element) {
-      nodes.add(_propograteCheckedNode(element));
+      _propagateCheckedNode(element);
     });
-    return nodes;
+    //return nodes;
   }
 
-  Node _propograteCheckedNode(node) {
+  propagateCheckedNode(Node node) {
+    _propagateCheckedNode(node);
+    //return nodes;
+  }
+
+  _propagateCheckedNode(Node node) {
     if (node.children.length > 0) {
       var allCount = 0;
       var checkedCount = 0;
@@ -343,7 +352,7 @@ class TreeViewController {
       bool status;
       List<Node> _children = [];
       node.children.forEach((element) {
-        var child = _propograteCheckedNode(element);
+        var child = _propagateCheckedNode(element);
         if (child.checked == null) {
           hasSome = true;
         }
@@ -364,27 +373,42 @@ class TreeViewController {
       } else {
         status = false;
       }
-      node.data.isChecked = status;
-      print(node.data.permissionName);
-      print(status);
-      return Node(
-          children: _children,
-          label: node.data.permissionName,
-          key: node.data.id.toString(),
-          checked: status,
-          expanded: node.expanded,
-          data: node.data);
-      // return node.copyWith(children: _children);
+      node.checked = status;
+      if (node.updateChecked != null) {
+        node.updateChecked();
+      }
+      return node;
     } else {
-     // node.data.isChecked = status;
-//      print(node.data.permissionName);
-//      print(node.checked);
-      return Node(
-          label: node.data.permissionName,
-          key: node.data.id.toString(),
-          checked: node.checked,
-          expanded: node.expanded,
-          data: node.data);
+      if (node.updateChecked != null) {
+        node.updateChecked();
+      }
+      return node;
+    }
+  }
+
+  List<dynamic> getCheckedData({bool includeParent = true}) {
+    List<dynamic> list = [];
+    this.children.forEach((element) {
+      _fillCheckedData(element, list, includeParent: includeParent);
+    });
+    return list;
+  }
+
+  _fillCheckedData(Node node, List<dynamic> list, {bool includeParent = true}) {
+    if (includeParent) {
+      if (node.checked != null && node.checked) {
+        list.add(node.data);
+      }
+    } else {
+      if (node.children.length == 0 &&
+          (node.checked != null && node.checked)) {
+        list.add(node.data);
+      }
+    }
+    if (node.children.length > 0) {
+      node.children.forEach((element) {
+        _fillCheckedData(element, list);
+      });
     }
   }
 

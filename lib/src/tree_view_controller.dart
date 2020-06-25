@@ -343,16 +343,17 @@ class TreeViewController {
       bool status;
       List<Node> _children = [];
       node.children.forEach((element) {
-        if (element.data.isChecked == null) {
+        var child = _propograteCheckedNode(element);
+        if (child.checked == null) {
           hasSome = true;
         }
         if (!hasSome) {
-          if (element.data.isChecked != null && element.data.isChecked) {
+          if (child.checked != null && child.checked) {
             checkedCount++;
           }
           allCount++;
         }
-        _children.add(_propograteCheckedNode(element));
+        _children.add(child);
       });
       if (hasSome) {
         status = null;
@@ -364,16 +365,25 @@ class TreeViewController {
         status = false;
       }
       node.data.isChecked = status;
+      print(node.data.permissionName);
+      print(status);
       return Node(
           children: _children,
           label: node.data.permissionName,
           key: node.data.id.toString(),
+          checked: status,
+          expanded: node.expanded,
           data: node.data);
-     // return node.copyWith(children: _children);
+      // return node.copyWith(children: _children);
     } else {
+     // node.data.isChecked = status;
+//      print(node.data.permissionName);
+//      print(node.checked);
       return Node(
           label: node.data.permissionName,
           key: node.data.id.toString(),
+          checked: node.checked,
+          expanded: node.expanded,
           data: node.data);
     }
   }

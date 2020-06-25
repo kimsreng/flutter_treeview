@@ -113,20 +113,23 @@ class _TreeNodeState extends State<TreeNode>
         //as user uncheck and it become the null state
         //so just make true and upadte all children to to true
       }
-      _setExpandedStatusTo(widget.node, status);
-//      setState(() {
-//        isChecked = status;
-//      });
+      _setCheckedStatusToChildren(widget.node, status);
+      setState(() {
+        isChecked = status;
+      });
       //propogate change to parent node
       _treeView.onCheckChanged(widget.node, status);
     }
   }
 
-  _setExpandedStatusTo(Node node, bool status) {
+  _setCheckedStatusToChildren(Node node, bool status) {
     node.data.isChecked = status;
+    node.checked = status;
+//    print(node.data.permissionName);
+//    print(status);
     if (node.children.length > 0) {
       node.children.forEach((element) {
-        _setExpandedStatusTo(element, status);
+        _setCheckedStatusToChildren(element, status);
       });
     }
   }

@@ -30,6 +30,8 @@ class Node<T> {
   /// node is a parent
   final bool expanded;
 
+  bool checked;
+
   /// Generic data model that can be assigned to the [TreeNode]. This makes
   /// it useful to assign and retrieve data associated with the [TreeNode]
   final T data;
@@ -42,6 +44,7 @@ class Node<T> {
     @required this.label,
     this.children: const [],
     this.expanded: false,
+    this.checked,
     this.icon,
     this.data,
   })  : assert(key != null),

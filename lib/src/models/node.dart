@@ -24,7 +24,7 @@ class Node<T> {
   final String label;
 
   /// An optional icon that is displayed on the [TreeNode].
-  final NodeIcon icon;
+  final NodeIcon? icon;
 
   /// The open or closed state of the [TreeNode]. Applicable only if the
   /// node is a parent
@@ -32,24 +32,24 @@ class Node<T> {
 
   /// checked property for the node
   /// this is the case when checked is configured
-  bool checked;
+  bool? checked;
 
   ///A function to be created by
   ///the node widget to reflect change in the check status
-  Function updateChecked;
+  Function? updateChecked;
 
   /// Generic data model that can be assigned to the [TreeNode]. This makes
   /// it useful to assign and retrieve data associated with the [TreeNode]
-  final T data;
+  final T? data;
 
   /// The sub [Node]s of this object.
   final List<Node> children;
 
   Node({
-    @required this.key,
-    @required this.label,
-    this.children: const [],
-    this.expanded: false,
+    required this.key,
+    required this.label,
+    this.children = const [],
+    this.expanded = false,
     this.checked,
     this.icon,
     this.data,
@@ -73,9 +73,9 @@ class Node<T> {
   /// value. Excepted values include: 1, yes, true and their
   /// associated string values.
   factory Node.fromMap(Map<String, dynamic> map) {
-    String _key = map['key'];
+    String? _key = map['key'];
     String _label = map['label'];
-    NodeIcon _icon;
+    NodeIcon? _icon;
     List<Node> _children = [];
     if (_key == null) {
       _key = Utilities.generateRandom();
@@ -101,12 +101,12 @@ class Node<T> {
   /// Creates a copy of this object but with the given fields
   /// replaced with the new values.
   Node copyWith({
-    String key,
-    String label,
-    List<Node> children,
-    bool expanded,
-    NodeIcon icon,
-    T data,
+    String? key,
+    String? label,
+    List<Node>? children,
+    bool? expanded,
+    NodeIcon? icon,
+    T? data,
   }) =>
       Node(
         key: key ?? this.key,
@@ -122,7 +122,7 @@ class Node<T> {
   bool get isParent => children.isNotEmpty;
 
   /// Whether this object has a non-null icon.
-  bool get hasIcon => icon != null && icon.icon != null;
+  bool get hasIcon => icon != null && icon!.icon != null;
 
   /// Whether this object has data associated with it.
   bool get hasData => data != null;
@@ -132,7 +132,7 @@ class Node<T> {
     Map<String, dynamic> _map = {
       "key": key,
       "label": label,
-      "icon": icon == null ? null : icon.asMap,
+      "icon": icon == null ? null : icon!.asMap,
       "expanded": expanded,
       "children": children.map((Node child) => child.asMap).toList(),
     };
@@ -147,10 +147,10 @@ class Node<T> {
 
   @override
   int get hashCode {
-    return hashValues(
+    return Object.hash(
       key,
       label,
-      icon,
+      icon!,
       expanded,
       children,
     );

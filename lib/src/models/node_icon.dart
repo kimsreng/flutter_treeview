@@ -18,15 +18,15 @@ class NodeIcon {
   final int codePoint;
 
   /// The font family of used for this icon.
-  final String fontFamily;
+  final String? fontFamily;
 
   /// The color of the icon. This value overrides the default value
   /// in the [TreeViewTheme]
-  final String color;
+  final String? color;
 
   NodeIcon({
-    this.codePoint,
-    this.fontFamily: 'MaterialIcons',
+    required this.codePoint,
+    this.fontFamily = 'MaterialIcons',
     this.color,
   }) : assert(codePoint != null);
 
@@ -34,12 +34,12 @@ class NodeIcon {
   /// default Material Design font and returns a [NodeIcon] object
   /// with an appropriate [codePoint] value and other defaults if the
   /// icon is found. If not found, it returns null.
-  factory NodeIcon.fromString(String icon) {
-    IconData _icon = Utilities.getIcon(icon);
+  static NodeIcon? fromString(String icon) {
+    IconData? _icon = Utilities.getIcon(icon);
     return _icon != null
         ? NodeIcon(
             codePoint: _icon.codePoint,
-            fontFamily: _icon.fontFamily,
+            fontFamily: _icon.fontFamily ?? 'MaterialIcons',
           )
         : null;
   }
@@ -57,7 +57,7 @@ class NodeIcon {
   /// Creates a [NodeIcon] from a Map<String, dynamic> map. The map
   /// should contain a "codePoint" value. If the [codePoint] is
   /// missing or invalid, it returns null.
-  factory NodeIcon.fromMap(Map<String, dynamic> map) {
+  static NodeIcon? fromMap(Map<String, dynamic> map) {
     if (map['codePoint'] != null) {
       IconData _icon = IconData(map['codePoint'],
           fontFamily: map['fontFamily'] ?? 'MaterialIcons');
@@ -71,10 +71,11 @@ class NodeIcon {
   }
 
   /// Getter to return the [IconData] icon
-  IconData get icon => IconData(codePoint, fontFamily: fontFamily);
+  IconData get icon =>
+      IconData(codePoint, fontFamily: fontFamily ?? 'MaterialIcons');
 
   /// Getter to return the icon color
-  Color get iconColor => color == null ? null : Utilities.getColor(color);
+  Color? get iconColor => color == null ? null : Utilities.getColor(color!);
 
   /// Map representation of this object
   Map<String, dynamic> get asMap => {
@@ -90,7 +91,7 @@ class NodeIcon {
 
   @override
   int get hashCode {
-    return hashValues(
+    return Object.hash(
       codePoint,
       color,
       icon,

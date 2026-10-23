@@ -30,14 +30,14 @@ class TreeView extends InheritedWidget {
   final TreeViewController controller;
 
   /// The tap handler for a node. Passes the node key.
-  final Function(String) onNodeTap;
+  final Function(String)? onNodeTap;
 
   /// The double tap handler for a node. Passes the node key.
-  final Function(String) onNodeDoubleTap;
+  final Function(String)? onNodeDoubleTap;
 
   /// The expand/collapse handler for a node. Passes the node key and the
   /// expansion state.
-  final Function(String, bool) onExpansionChanged;
+  final Function(String, bool)? onExpansionChanged;
 
   /// The theme for [TreeView].
   final TreeViewTheme theme;
@@ -59,14 +59,14 @@ class TreeView extends InheritedWidget {
   final bool supportParentDoubleTap;
 
   TreeView({
-    Key key,
-    @required this.controller,
+    Key? key,
+    required this.controller,
     this.onNodeTap,
     this.onNodeDoubleTap,
     this.onExpansionChanged,
-    this.allowParentSelect: false,
-    this.supportParentDoubleTap: false,
-    TreeViewTheme theme,
+    this.allowParentSelect = false,
+    this.supportParentDoubleTap = false,
+    TreeViewTheme? theme,
   })  : this.theme = theme ?? const TreeViewTheme(),
         super(
           key: key,
@@ -74,7 +74,7 @@ class TreeView extends InheritedWidget {
         );
 
   static TreeView of(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType(aspect: TreeView);
+      context.dependOnInheritedWidgetOfExactType<TreeView>()!;
 
   @override
   bool updateShouldNotify(TreeView oldWidget) {

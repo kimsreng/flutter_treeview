@@ -4,13 +4,13 @@ import 'package:flutter_treeview/src/models/node.dart';
 import 'package:flutter_treeview/src/models/node_icon.dart';
 
 class Person {
-  final int age;
+  final int? age;
 
   Person({this.age});
 }
 
 class Animal {
-  final int legs;
+  final int? legs;
 
   Animal({this.legs});
 }

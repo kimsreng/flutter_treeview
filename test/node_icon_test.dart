@@ -5,7 +5,7 @@ import 'package:flutter_treeview/src/models/node_icon.dart';
 void main() {
   group('instantiate', () {
     test('from string', () {
-      final NodeIcon icon = NodeIcon.fromString('adb');
+      final NodeIcon icon = NodeIcon.fromString('adb')!;
       expect(icon.codePoint, Icons.adb.codePoint);
       expect(icon.fontFamily, Icons.adb.fontFamily);
       expect(icon.iconColor, null);
@@ -25,7 +25,7 @@ void main() {
         "color": "#990000",
         "fontFamily": "MaterialIcons",
       };
-      final NodeIcon icon = NodeIcon.fromMap(map);
+      final NodeIcon icon = NodeIcon.fromMap(map)!;
       expect(icon.codePoint, Icons.help.codePoint);
       expect(icon.fontFamily, Icons.help.fontFamily);
       expect(icon.iconColor, Color(0xff990000));

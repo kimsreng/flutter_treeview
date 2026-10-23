@@ -35,13 +35,13 @@ class TreeViewTheme {
   final TextStyle parentLabelStyle;
 
   const TreeViewTheme({
-    this.colorScheme: const ColorScheme.light(),
-    this.iconTheme: const IconThemeData.fallback(),
-    this.expanderTheme: const ExpanderThemeData.fallback(),
-    this.labelStyle: const TextStyle(),
-    this.parentLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-    this.levelPadding: _kDefaultLevelPadding,
-    this.dense: true,
+    this.colorScheme = const ColorScheme.light(),
+    this.iconTheme = const IconThemeData.fallback(),
+    this.expanderTheme = const ExpanderThemeData.fallback(),
+    this.labelStyle = const TextStyle(),
+    this.parentLabelStyle = const TextStyle(fontWeight: FontWeight.bold),
+    this.levelPadding = _kDefaultLevelPadding,
+    this.dense = true,
   });
 
   /// Creates a [TreeView] theme with some reasonable default values.
@@ -64,13 +64,13 @@ class TreeViewTheme {
   /// Creates a copy of this theme but with the given fields replaced with
   /// the new values.
   TreeViewTheme copyWith({
-    ColorScheme colorScheme,
-    IconThemeData iconTheme,
-    ExpanderThemeData expanderTheme,
-    TextStyle labelStyle,
-    TextStyle parentLabelStyle,
-    bool dense,
-    double levelPadding,
+    ColorScheme? colorScheme,
+    IconThemeData? iconTheme,
+    ExpanderThemeData? expanderTheme,
+    TextStyle? labelStyle,
+    TextStyle? parentLabelStyle,
+    bool? dense,
+    double? levelPadding,
   }) {
     return TreeViewTheme(
       colorScheme: colorScheme ?? this.colorScheme,
@@ -103,7 +103,7 @@ class TreeViewTheme {
 
   @override
   int get hashCode {
-    return hashValues(
+    return Object.hash(
       colorScheme,
       levelPadding,
       iconTheme,

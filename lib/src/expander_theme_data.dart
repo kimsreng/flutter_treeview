@@ -55,12 +55,12 @@ class ExpanderThemeData {
   final bool animated;
 
   const ExpanderThemeData({
-    this.color: const Color(0xFF000000),
-    this.position: ExpanderPosition.start,
-    this.type: ExpanderType.caret,
-    this.size: _kDefaultExpanderSize,
-    this.modifier: ExpanderModifier.none,
-    this.animated: true,
+    this.color = const Color(0xFF000000),
+    this.position = ExpanderPosition.start,
+    this.type = ExpanderType.caret,
+    this.size = _kDefaultExpanderSize,
+    this.modifier = ExpanderModifier.none,
+    this.animated = true,
   });
 
   /// Creates an expander icon theme with some reasonable default values.
@@ -82,12 +82,12 @@ class ExpanderThemeData {
   /// Creates a copy of this theme but with the given fields replaced with
   /// the new values.
   ExpanderThemeData copyWith({
-    Color color,
-    ExpanderType type,
-    ExpanderPosition position,
-    ExpanderModifier modifier,
-    bool animated,
-    double size,
+    Color? color,
+    ExpanderType? type,
+    ExpanderPosition? position,
+    ExpanderModifier? modifier,
+    bool? animated,
+    double? size,
   }) {
     return ExpanderThemeData(
       color: color ?? this.color,
@@ -133,5 +133,5 @@ class ExpanderThemeData {
 
   @override
   int get hashCode =>
-      hashValues(color, position, type, size, modifier, animated);
+      Object.hash(color, position, type, size, modifier, animated);
 }
